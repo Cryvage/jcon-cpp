@@ -103,6 +103,8 @@ bool JsonRpcServer::dispatch(const QString& method_name,
                              const QString& request_id,
                              QVariant& return_value)
 {
+    Q_UNUSED(request_id);
+
     for (auto& s : m_services) {
         const QMetaObject* meta_obj = s->metaObject();
         for (int i = 0; i < meta_obj->methodCount(); ++i) {
