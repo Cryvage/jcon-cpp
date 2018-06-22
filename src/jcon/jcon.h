@@ -3,7 +3,7 @@
 #include <QtGlobal>
 
 #ifndef JCON_DLL
-#define JCON_DLL
+// #define JCON_DLL // Do not force define the macro!
 #endif
 
 // Use the generic helper definitions above to define JCON_API, which is used
