@@ -22,6 +22,7 @@ JsonRpcClient::JsonRpcClient(std::shared_ptr<JsonRpcSocket> socket,
     , m_call_timeout_ms(call_timeout_ms)
     , m_outstanding_request_count(0)
     , m_useSimpleId(false)
+    , m_simpleId(0)
     , m_allowNotification(false)
 {
     if (!m_logger) {
@@ -156,15 +157,13 @@ JsonRpcClient::prepareCall(const QString& method)
 std::pair<std::shared_ptr<JsonRpcRequest>, JsonRpcClient::RequestId>
 JsonRpcClient::createRequest()
 {
-    static quint8 simpleId = 0;
     RequestId id;
 
-    if (m_useSimpleId) {
-        id = QString::number(simpleId);
-        simpleId++;
-    } else {
+    if (m_useSimpleId)
+        id = QString::number(m_simpleId++);
+    else
         id = createUuid();
-    }
+
     auto request = std::make_shared<JsonRpcRequest>(this, id);
     return std::make_pair(request, id);
 }

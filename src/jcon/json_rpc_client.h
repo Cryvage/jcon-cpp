@@ -153,6 +153,7 @@ private:
     ResultMap m_results;
 
     bool m_useSimpleId;
+    quint8 m_simpleId;
     bool m_allowNotification;
 };
 
