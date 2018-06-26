@@ -21,6 +21,7 @@ JsonRpcClient::JsonRpcClient(std::shared_ptr<JsonRpcSocket> socket,
     , m_logger(logger)
     , m_call_timeout_ms(call_timeout_ms)
     , m_outstanding_request_count(0)
+    , m_useSimpleId(false)
 {
     if (!m_logger) {
         m_logger = std::make_shared<JsonRpcFileLogger>("json_client_log.txt");
@@ -154,7 +155,15 @@ JsonRpcClient::prepareCall(const QString& method)
 std::pair<std::shared_ptr<JsonRpcRequest>, JsonRpcClient::RequestId>
 JsonRpcClient::createRequest()
 {
-    auto id = createUuid();
+    static quint8 simpleId = 0;
+    RequestId id;
+
+    if (m_useSimpleId) {
+        id = QString::number(simpleId);
+        simpleId++;
+    } else {
+        id = createUuid();
+    }
     auto request = std::make_shared<JsonRpcRequest>(this, id);
     return std::make_pair(request, id);
 }
@@ -226,6 +235,11 @@ QHostAddress JsonRpcClient::serverAddress() const
 int JsonRpcClient::serverPort() const
 {
     return m_endpoint->peerPort();
+}
+
+void JsonRpcClient::enableSimpleId(bool enabled)
+{
+    m_useSimpleId = enabled;
 }
 
 void JsonRpcClient::jsonResponseReceived(const QJsonObject& response)

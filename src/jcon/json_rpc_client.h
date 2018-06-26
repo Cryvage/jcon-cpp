@@ -46,6 +46,9 @@ public:
     QHostAddress serverAddress() const;
     int serverPort() const;
 
+    /// Use much simpler id instead of genuine UUID
+    void enableSimpleId(bool enabled);
+
     template<typename... T>
     std::shared_ptr<JsonRpcResult> call(const QString& method, T&&... args);
 
@@ -142,6 +145,8 @@ private:
 
     using ResultMap = QMap<RequestId, std::shared_ptr<JsonRpcResult>>;
     ResultMap m_results;
+
+    bool m_useSimpleId;
 };
 
 template<typename... Ts>
