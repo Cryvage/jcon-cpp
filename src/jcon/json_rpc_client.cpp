@@ -22,6 +22,7 @@ JsonRpcClient::JsonRpcClient(std::shared_ptr<JsonRpcSocket> socket,
     , m_call_timeout_ms(call_timeout_ms)
     , m_outstanding_request_count(0)
     , m_useSimpleId(false)
+    , m_allowNotification(false)
 {
     if (!m_logger) {
         m_logger = std::make_shared<JsonRpcFileLogger>("json_client_log.txt");
@@ -242,7 +243,12 @@ void JsonRpcClient::enableSimpleId(bool enabled)
     m_useSimpleId = enabled;
 }
 
-void JsonRpcClient::jsonResponseReceived(const QJsonObject& response)
+void JsonRpcClient::enableReceiveNotification(bool enabled)
+{
+    m_allowNotification = enabled;
+}
+
+void JsonRpcClient::jsonResponseReceived(const QJsonObject &response)
 {
     JCON_ASSERT(response["jsonrpc"].toString() == "2.0");
 
@@ -271,6 +277,13 @@ void JsonRpcClient::jsonResponseReceived(const QJsonObject& response)
             --m_outstanding_request_count;
         }
 
+        return;
+    }
+
+    if (m_allowNotification && !response.contains("id")) {
+        QVariantMap notif = response.toVariantMap();
+        notif.remove("jsonrpc");
+        emit notificationReceived(notif);
         return;
     }
 
