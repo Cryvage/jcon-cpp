@@ -6,6 +6,7 @@
 
 #include <QSignalSpy>
 #include <QUuid>
+#include <QBuffer>
 
 #include <memory>
 
@@ -272,6 +273,7 @@ void JsonRpcClient::jsonResponseReceived(const QJsonObject &response)
             if (it == m_outstanding_requests.end()) {
                 logError(QString("got error response for non-existing "
                                  "request: %1").arg(id));
+                emit error(code, msg, data);
                 return;
             }
             emit it.value()->error(code, msg, data);

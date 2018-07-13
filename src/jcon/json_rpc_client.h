@@ -82,6 +82,9 @@ signals:
     /// Emitted when the RPC socket has an error.
     void socketError(QObject* socket, QAbstractSocket::SocketError error);
 
+    /// Emitted when an error does not match a request
+    void error(int code, const QString& message, const QVariant& data);
+
     /// Emitted when a notification is received
     void notificationReceived(const QVariant& notification);
 
