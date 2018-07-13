@@ -252,7 +252,8 @@ void JsonRpcClient::jsonResponseReceived(const QJsonObject &response)
     JCON_ASSERT(response["jsonrpc"].toString() == "2.0");
 
     if (response.value("jsonrpc").toString() != "2.0") {
-        logError("invalid protocol tag");
+        logError(QString("invalid protocol tag, response: \"%1\"")
+                 .arg(QVariant(response.toVariantMap()).toString()));
         return;
     }
 
