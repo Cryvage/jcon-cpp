@@ -8,6 +8,7 @@
 #include <QUuid>
 
 #include <memory>
+#include <stdexcept>
 
 namespace jcon {
 
@@ -49,8 +50,9 @@ JsonRpcClient::~JsonRpcClient()
 std::shared_ptr<JsonRpcResult>
 JsonRpcClient::waitForSyncCallbacks(const JsonRpcRequest* request)
 {
+    auto id = request->id();
     connect(request, &JsonRpcRequest::result,
-            [this, id = request->id()](const QVariant& result) {
+            [this, id](const QVariant& result) {
                 m_logger->logDebug(
                     QString("Received success response to synchronous "
                             "RPC call (ID: %1)").arg(qPrintable(id)));
@@ -59,7 +61,7 @@ JsonRpcClient::waitForSyncCallbacks(const JsonRpcRequest* request)
             });
 
     connect(request, &JsonRpcRequest::error,
-            [this, id = request->id()](int code,
+            [this, id](int code,
                                        const QString& message,
                                        const QVariant& data)
             {

@@ -445,7 +445,7 @@ QString logInvoke(const QMetaMethod& meta_method,
     QStringList args_sl;
     std::transform(ns.begin(), ns.end(), ps.begin(),
                    std::back_inserter(args_sl),
-                   [](auto x, auto y) -> QString {
+                   [](QByteArray x, QString y) -> QString {
                        return static_cast<QString>(x) + ": " + y;
                    }
         );
