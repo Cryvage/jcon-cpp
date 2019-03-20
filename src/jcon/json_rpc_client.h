@@ -46,6 +46,12 @@ public:
     QHostAddress serverAddress() const;
     int serverPort() const;
 
+    /// Use much simpler id instead of genuine UUID
+    void enableSimpleId(bool enabled);
+
+    /// Allow a client to receive notifications from server
+    void enableReceiveNotification(bool enabled);
+
     template<typename... T>
     std::shared_ptr<JsonRpcResult> call(const QString& method, T&&... args);
 
@@ -75,6 +81,12 @@ signals:
 
     /// Emitted when the RPC socket has an error.
     void socketError(QObject* socket, QAbstractSocket::SocketError error);
+
+    /// Emitted when an error does not match a request
+    void error(int code, const QString& message, const QVariant& data);
+
+    /// Emitted when a notification is received
+    void notificationReceived(const QVariant& notification);
 
 protected:
     void logError(const QString& msg);
@@ -142,6 +154,10 @@ private:
 
     using ResultMap = QMap<RequestId, std::shared_ptr<JsonRpcResult>>;
     ResultMap m_results;
+
+    bool m_useSimpleId;
+    quint8 m_simpleId;
+    bool m_allowNotification;
 };
 
 template<typename... Ts>

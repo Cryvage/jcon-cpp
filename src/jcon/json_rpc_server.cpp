@@ -114,6 +114,8 @@ bool JsonRpcServer::dispatch(const QString& method_name,
                              const QString& request_id,
                              QVariant& return_value)
 {
+    Q_UNUSED(request_id);
+
     QString method_ns;
     QString method_name_without_ns;
     std::tie(method_ns, method_name_without_ns) =

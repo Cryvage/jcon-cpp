@@ -11,17 +11,17 @@ void JsonRpcDebugLogger::logDebug(const QString& message)
 
 void JsonRpcDebugLogger::logInfo(const QString& message)
 {
-    qDebug().noquote() << message;
+    qInfo().noquote() << message;
 }
 
 void JsonRpcDebugLogger::logWarning(const QString& message)
 {
-    qDebug().noquote() << message;
+    qWarning().noquote() << message;
 }
 
 void JsonRpcDebugLogger::logError(const QString& message)
 {
-    qDebug().noquote() << message;
+    qCritical().noquote() << message;
 }
 
 }

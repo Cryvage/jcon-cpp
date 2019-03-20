@@ -6,6 +6,7 @@
 
 #include <QSignalSpy>
 #include <QUuid>
+#include <QBuffer>
 
 #include <memory>
 #include <stdexcept>
@@ -22,6 +23,9 @@ JsonRpcClient::JsonRpcClient(std::shared_ptr<JsonRpcSocket> socket,
     , m_logger(logger)
     , m_call_timeout_ms(call_timeout_ms)
     , m_outstanding_request_count(0)
+    , m_useSimpleId(false)
+    , m_simpleId(0)
+    , m_allowNotification(false)
 {
     if (!m_logger) {
         m_logger = std::make_shared<JsonRpcFileLogger>("json_client_log.txt");
@@ -156,7 +160,13 @@ JsonRpcClient::prepareCall(const QString& method)
 std::pair<std::shared_ptr<JsonRpcRequest>, JsonRpcClient::RequestId>
 JsonRpcClient::createRequest()
 {
-    auto id = createUuid();
+    RequestId id;
+
+    if (m_useSimpleId)
+        id = QString::number(m_simpleId++);
+    else
+        id = createUuid();
+
     auto request = std::make_shared<JsonRpcRequest>(this, id);
     return std::make_pair(request, id);
 }
@@ -233,12 +243,25 @@ int JsonRpcClient::serverPort() const
     return m_endpoint->peerPort();
 }
 
-void JsonRpcClient::jsonResponseReceived(const QJsonObject& response)
+void JsonRpcClient::enableSimpleId(bool enabled)
+{
+    m_useSimpleId = enabled;
+}
+
+void JsonRpcClient::enableReceiveNotification(bool enabled)
+{
+    m_allowNotification = enabled;
+}
+
+void JsonRpcClient::jsonResponseReceived(const QJsonObject &response)
 {
     JCON_ASSERT(response["jsonrpc"].toString() == "2.0");
 
     if (response.value("jsonrpc").toString() != "2.0") {
-        logError("invalid protocol tag");
+        QString debugString;
+        QDebug rspDebug(&debugString);
+        rspDebug << response;
+        logError(QString("invalid protocol tag, response: ") + debugString);
         return;
     }
 
@@ -255,6 +278,7 @@ void JsonRpcClient::jsonResponseReceived(const QJsonObject& response)
             if (it == m_outstanding_requests.end()) {
                 logError(QString("got error response for non-existing "
                                  "request: %1").arg(id));
+                emit error(code, msg, data);
                 return;
             }
             emit it.value()->error(code, msg, data);
@@ -262,6 +286,13 @@ void JsonRpcClient::jsonResponseReceived(const QJsonObject& response)
             --m_outstanding_request_count;
         }
 
+        return;
+    }
+
+    if (m_allowNotification && !response.contains("id")) {
+        QVariantMap notif = response.toVariantMap();
+        notif.remove("jsonrpc");
+        emit notificationReceived(notif);
         return;
     }
 
