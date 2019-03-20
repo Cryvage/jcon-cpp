@@ -239,12 +239,16 @@ bool JsonRpcServer::convertArgs(const QMetaMethod& meta_method,
         QVariant copy = QVariant(arg);
 
         if (copy.type() != param_type) {
-            if (copy.canConvert(param_type)) {
-                if (!copy.convert(param_type)) {
-                    // qDebug() << "cannot convert" << arg_type_name
-                    //          << "to" << param_type_name;
-                    return false;
-                }
+            if (!(copy.canConvert(static_cast<int>(param_type)) && copy.convert(static_cast<int>(param_type)))) {
+                // qDebug() << "cannot convert" << arg_type_name
+                //          << "to" << param_type_name;
+                logError(QString("argument %1 of %2 to method %3 cannot be converted from type %4 to type %5")
+                         .arg(i + 1)
+                         .arg(param_types.size())
+                         .arg(QString(meta_method.methodSignature()))
+                         .arg(QString(arg_type_name))
+                         .arg(QString(param_type_name)));
+                return false;
             }
         }
 
@@ -290,12 +294,16 @@ bool JsonRpcServer::convertArgs(const QMetaMethod& meta_method,
         QVariant copy = QVariant(arg);
 
         if (copy.type() != param_type) {
-            if (copy.canConvert(param_type)) {
-                if (!copy.convert(param_type)) {
-                    // qDebug() << "cannot convert" << arg_type_name
-                    //          << "to" << param_type_name;
-                    return false;
-                }
+            if (!(copy.canConvert(static_cast<int>(param_type)) && copy.convert(static_cast<int>(param_type)))) {
+                // qDebug() << "cannot convert" << arg_type_name
+                //          << "to" << param_type_name;
+                logError(QString("argument %1 of %2 to method %3 cannot be converted from type %4 to type %5")
+                         .arg(i + 1)
+                         .arg(param_types.size())
+                         .arg(QString(meta_method.methodSignature()))
+                         .arg(QString(arg_type_name))
+                         .arg(QString(param_type_name)));
+                return false;
             }
         }
 
