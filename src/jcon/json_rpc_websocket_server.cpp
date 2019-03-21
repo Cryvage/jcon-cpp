@@ -30,14 +30,14 @@ JsonRpcWebSocketServer::~JsonRpcWebSocketServer()
 bool JsonRpcWebSocketServer::listen(int port)
 {
     logInfo(QString("listening on port %2").arg(port));
-    return m_server->listen(QHostAddress::AnyIPv4, port);
+    return m_server->listen(QHostAddress::AnyIPv4, static_cast<quint16>(port));
 }
 
 
 bool JsonRpcWebSocketServer::listen(const QHostAddress& addr, int port)
 {
     logInfo(QString("listening on port %2").arg(port));
-    return m_server->listen(addr, port);
+    return m_server->listen(addr, static_cast<quint16>(port));
 }
 
 void JsonRpcWebSocketServer::close()

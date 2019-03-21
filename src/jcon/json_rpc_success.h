@@ -11,7 +11,7 @@ class JsonRpcSuccess : public JsonRpcResult
 {
 public:
     JsonRpcSuccess(QVariant result);
-    virtual ~JsonRpcSuccess();
+    virtual ~JsonRpcSuccess() override;
 
     bool isSuccess() const override { return true; }
     QVariant result() const override { return m_result; }

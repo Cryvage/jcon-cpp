@@ -25,7 +25,7 @@ public:
 
     JsonRpcError(const JsonRpcError& other);
 
-    virtual ~JsonRpcError();
+    virtual ~JsonRpcError() override;
 
     bool isSuccess() const override { return false; }
     QVariant result() const override { return QVariant(); }

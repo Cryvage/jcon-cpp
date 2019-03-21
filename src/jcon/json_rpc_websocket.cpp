@@ -83,7 +83,7 @@ bool JsonRpcWebSocket::isConnected() const
 
 size_t JsonRpcWebSocket::send(const QByteArray& data)
 {
-    return m_socket->sendTextMessage(data);
+    return static_cast<size_t>(m_socket->sendTextMessage(data));
 }
 
 QString JsonRpcWebSocket::errorString() const

@@ -22,7 +22,7 @@ JsonRpcTcpServer::~JsonRpcTcpServer()
 bool JsonRpcTcpServer::listen(int port)
 {
     logInfo(QString("listening on port %1").arg(port));
-    if (!m_server.listen(QHostAddress::AnyIPv4, port)) {
+    if (!m_server.listen(QHostAddress::AnyIPv4, static_cast<quint16>(port))) {
         auto msg = QString("Error listening on port %1").arg(port);
         logError(qPrintable(msg));
         return false;
@@ -33,7 +33,7 @@ bool JsonRpcTcpServer::listen(int port)
 bool JsonRpcTcpServer::listen(const QHostAddress& addr, int port)
 {
     logInfo(QString("listening on port %1").arg(port));
-    if (!m_server.listen(addr, port)) {
+    if (!m_server.listen(addr, static_cast<quint16>(port))) {
         auto msg = QString("Error listening on %1:%2")
             .arg(addr.toString()).arg(port);
         logError(qPrintable(msg));

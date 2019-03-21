@@ -26,7 +26,7 @@ public:
      */
     JsonRpcTcpSocket(QTcpSocket* socket);
 
-    virtual ~JsonRpcTcpSocket();
+    virtual ~JsonRpcTcpSocket() override;
 
     void connectToHost(const QString& host, int port) override;
     void connectToUrl(const QUrl& url) override;

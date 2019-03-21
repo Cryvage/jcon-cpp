@@ -48,7 +48,7 @@ void JsonRpcTcpSocket::setupSocket()
 
 void JsonRpcTcpSocket::connectToHost(const QString& host, int port)
 {
-    m_socket->connectToHost(host, port,
+    m_socket->connectToHost(host, static_cast<quint16>(port),
                             QIODevice::ReadWrite,
                             QAbstractSocket::IPv4Protocol);
 }
@@ -78,7 +78,7 @@ size_t JsonRpcTcpSocket::send(const QByteArray& data)
 {
     auto sz = m_socket->write(data);
     m_socket->flush();
-    return sz;
+    return static_cast<size_t>(sz);
 }
 
 QString JsonRpcTcpSocket::errorString() const

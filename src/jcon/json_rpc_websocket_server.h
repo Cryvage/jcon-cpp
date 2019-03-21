@@ -19,7 +19,7 @@ class JCON_API JsonRpcWebSocketServer : public JsonRpcServer
 public:
     JsonRpcWebSocketServer(QObject* parent = nullptr,
                            std::shared_ptr<JsonRpcLogger> logger = nullptr);
-    virtual ~JsonRpcWebSocketServer();
+    virtual ~JsonRpcWebSocketServer() override;
 
     bool listen(int port) override;
     bool listen(const QHostAddress& addr, int port) override;

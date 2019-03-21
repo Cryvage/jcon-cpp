@@ -12,7 +12,7 @@ class JCON_API JsonRpcFileLogger : public JsonRpcLogger
 {
 public:
     JsonRpcFileLogger(const QString& filename);
-    virtual ~JsonRpcFileLogger();
+    virtual ~JsonRpcFileLogger() override;
 
     void logDebug(const QString& message) override;
     void logInfo(const QString& message) override;
