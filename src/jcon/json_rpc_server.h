@@ -87,6 +87,18 @@ private:
               const QVariantMap& args,
               QVariant& return_value);
 
+    bool convertArg(const QMetaMethod& meta_method,
+                     const QVariant& arg, int index,
+                     QVariant& converted);
+
+    bool checkArgsCountMatch(const QMetaMethod& meta_method,
+                     int argsSize);
+
+    bool getArgAt(const QMetaMethod& meta_method,
+                     const QVariantMap& args,
+                     int index,
+                     QVariant& arg);
+
     bool convertArgs(const QMetaMethod& meta_method,
                      const QVariantList& args,
                      QVariantList& converted);

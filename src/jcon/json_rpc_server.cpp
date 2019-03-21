@@ -207,49 +207,79 @@ bool JsonRpcServer::call(QObject* object,
     return doCall(object, meta_method, converted_args, return_value);
 }
 
-bool JsonRpcServer::convertArgs(const QMetaMethod& meta_method,
-                                const QVariantList& args,
-                                QVariantList& converted_args)
+bool JsonRpcServer::convertArg(const QMetaMethod& meta_method, const QVariant& arg, int index, QVariant& converted)
 {
     QList<QByteArray> param_types = meta_method.parameterTypes();
-    if (args.size() != param_types.size()) {
+    if (!arg.isValid()) {
+        logError(QString("argument %1 of %2 to method %3 is invalid")
+                 .arg(index + 1)
+                 .arg(param_types.size())
+                 .arg(QString(meta_method.methodSignature())));
+        return false;
+    }
+
+    QByteArray arg_type_name = arg.typeName();
+    QByteArray param_type_name = param_types.at(index);
+
+    QVariant::Type param_type = QVariant::nameToType(param_type_name);
+
+    QVariant copy = QVariant(arg);
+
+    if (copy.type() != param_type) {
+        if (!(copy.canConvert(static_cast<int>(param_type)) && copy.convert(static_cast<int>(param_type)))) {
+            // qDebug() << "cannot convert" << arg_type_name
+            //          << "to" << param_type_name;
+            logError(QString("argument %1 of %2 to method %3 cannot be converted from type %4 to type %5")
+                     .arg(index + 1)
+                     .arg(param_types.size())
+                     .arg(QString(meta_method.methodSignature()))
+                     .arg(QString(arg_type_name))
+                     .arg(QString(param_type_name)));
+            return false;
+        }
+    }
+
+    converted = copy;
+    return true;
+}
+
+bool JsonRpcServer::checkArgsCountMatch(const QMetaMethod& meta_method, int argsSize)
+{
+    if (argsSize != meta_method.parameterTypes().size()) {
         logError(QString("wrong number of arguments to method %1 -- "
                          "expected %2 arguments, but got %3")
                  .arg(QString(meta_method.methodSignature()))
                  .arg(meta_method.parameterCount())
-                 .arg(args.size()));
+                 .arg(argsSize));
         return false;
     }
+    return true;
+}
 
-    for (int i = 0; i < param_types.size(); i++) {
+bool JsonRpcServer::getArgAt(const QMetaMethod& meta_method, const QVariantMap& args, int index, QVariant& arg)
+{
+    arg = QVariant{};
+    QByteArray param_name = meta_method.parameterNames().at(index);
+    if (args.find(param_name) == args.end()) {
+        // no arg with param name found
+        return false;
+    }
+    arg = args.value(param_name);
+    return true;
+}
+
+bool JsonRpcServer::convertArgs(const QMetaMethod& meta_method,
+                                const QVariantList& args,
+                                QVariantList& converted_args)
+{
+    if(!checkArgsCountMatch(meta_method,args.size())) return false;
+
+    for (int i = 0; i < args.size(); i++) {
         const QVariant& arg = args.at(i);
-        if (!arg.isValid()) {
-            logError(QString("argument %1 of %2 to method %3 is invalid")
-                     .arg(i + 1)
-                     .arg(param_types.size())
-                     .arg(QString(meta_method.methodSignature())));
+        QVariant copy;
+
+        if(!convertArg(meta_method,arg,i,copy)){
             return false;
-        }
-
-        QByteArray arg_type_name = arg.typeName();
-        QByteArray param_type_name = param_types.at(i);
-
-        QVariant::Type param_type = QVariant::nameToType(param_type_name);
-
-        QVariant copy = QVariant(arg);
-
-        if (copy.type() != param_type) {
-            if (!(copy.canConvert(static_cast<int>(param_type)) && copy.convert(static_cast<int>(param_type)))) {
-                // qDebug() << "cannot convert" << arg_type_name
-                //          << "to" << param_type_name;
-                logError(QString("argument %1 of %2 to method %3 cannot be converted from type %4 to type %5")
-                         .arg(i + 1)
-                         .arg(param_types.size())
-                         .arg(QString(meta_method.methodSignature()))
-                         .arg(QString(arg_type_name))
-                         .arg(QString(param_type_name)));
-                return false;
-            }
         }
 
         converted_args << copy;
@@ -261,50 +291,16 @@ bool JsonRpcServer::convertArgs(const QMetaMethod& meta_method,
                                 const QVariantMap& args,
                                 QVariantList& converted_args)
 {
-    QList<QByteArray> param_types = meta_method.parameterTypes();
-    if (args.size() != param_types.size()) {
-        logError(QString("wrong number of arguments to method %1 -- "
-                         "expected %2 arguments, but got %3")
-                 .arg(QString(meta_method.methodSignature()))
-                 .arg(meta_method.parameterCount())
-                 .arg(args.size()));
-        return false;
-    }
+    if(!checkArgsCountMatch(meta_method,args.size())) return false;
 
-    for (int i = 0; i < param_types.size(); i++) {
-        QByteArray param_name = meta_method.parameterNames().at(i);
-        if (args.find(param_name) == args.end()) {
-            // no arg with param name found
+    for (int i = 0; i < args.size(); i++) {
+        QVariant arg;
+        if(!getArgAt(meta_method,args,i,arg)) return false;
+
+        QVariant copy;
+
+        if(!convertArg(meta_method,arg,i,copy)){
             return false;
-        }
-        const QVariant& arg = args.value(param_name);
-        if (!arg.isValid()) {
-            logError(QString("argument %1 of %2 to method %3 is invalid")
-                     .arg(i + 1)
-                     .arg(param_types.size())
-                     .arg(QString(meta_method.methodSignature())));
-            return false;
-        }
-
-        QByteArray arg_type_name = arg.typeName();
-        QByteArray param_type_name = param_types.at(i);
-
-        QVariant::Type param_type = QVariant::nameToType(param_type_name);
-
-        QVariant copy = QVariant(arg);
-
-        if (copy.type() != param_type) {
-            if (!(copy.canConvert(static_cast<int>(param_type)) && copy.convert(static_cast<int>(param_type)))) {
-                // qDebug() << "cannot convert" << arg_type_name
-                //          << "to" << param_type_name;
-                logError(QString("argument %1 of %2 to method %3 cannot be converted from type %4 to type %5")
-                         .arg(i + 1)
-                         .arg(param_types.size())
-                         .arg(QString(meta_method.methodSignature()))
-                         .arg(QString(arg_type_name))
-                         .arg(QString(param_type_name)));
-                return false;
-            }
         }
 
         converted_args << copy;
